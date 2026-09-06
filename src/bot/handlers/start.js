@@ -62,3 +62,29 @@ export async function handleShowPlatforms(ctx) {
     await ctx.reply(msg, { parse_mode: 'Markdown', reply_markup: kb });
   }
 }
+
+export async function handleReport(ctx) {
+  const { InlineKeyboard } = await import('grammy');
+  
+  const reportMsg = 
+`🐞 <b>Report a Bug or Issue</b>
+
+We strive to provide the best experience across the Univora Ecosystem. However, if you are facing any issues, errors, or bugs while using our bots or services, we are here to help!
+
+<b>What you can report:</b>
+• Payment or checkout failures
+• Premium activation issues
+• Bot not responding or errors
+• General feedback or suggestions
+
+Click the button below to reach our official Support & Report Bot, where our team will assist you directly!`;
+
+  const kb = new InlineKeyboard();
+  kb.url('💬 REPORT [UNIVORA]', 'https://t.me/UNIVORA_REPORTBOT');
+
+  await ctx.reply(reportMsg, {
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+    reply_markup: kb,
+  });
+}

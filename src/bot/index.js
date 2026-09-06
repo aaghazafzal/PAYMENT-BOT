@@ -18,6 +18,10 @@ export function initBot() {
   // Register command handlers
   bot.command('start', handleStart);
   bot.command(['buy', 'premium', 'plans', 'subscribe'], handleShowPlatforms);
+  bot.command('report', async (ctx) => {
+    const { handleReport } = await import('./handlers/start.js');
+    return handleReport(ctx);
+  });
 
   // Register admin handlers
   handleAdminCommands(bot);
@@ -117,7 +121,8 @@ export async function startBot() {
       await instance.api.setMyCommands([
         { command: 'start', description: 'Open Main Menu 🏠' },
         { command: 'buy', description: 'Buy Premium Subscription 💎' },
-        { command: 'plans', description: 'View All Plans 📋' }
+        { command: 'plans', description: 'View All Plans 📋' },
+        { command: 'report', description: 'Report a Bug or Issue 🐞' }
       ]);
       console.log('✅ Bot commands menu updated!');
     } catch (err) {

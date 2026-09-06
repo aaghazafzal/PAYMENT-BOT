@@ -13,6 +13,12 @@ export async function handlePlatformCallbacks(ctx) {
     return handleShowPlatforms(ctx);
   }
 
+  if (data === 'report_issue') {
+    const { handleReport } = await import('./start.js');
+    await ctx.answerCallbackQuery();
+    return handleReport(ctx);
+  }
+
   if (data === 'help_menu') {
     await ctx.answerCallbackQuery();
     const helpMsg = 

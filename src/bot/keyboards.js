@@ -9,7 +9,8 @@ export function getMainMenuKeyboard() {
   kb.text('💎 Buy Subscription', 'show_platforms').row();
   kb.url('📢 Official Channel', 'https://t.me/univora88').row();
   kb.url('🌐 Visit Website', 'https://univora.website').row();
-  kb.text('❓ Help & Support', 'help_menu').row();
+  kb.text('❓ Help & Support', 'help_menu');
+  kb.text('🐞 Report Issue', 'report_issue').row();
   return kb;
 }
 

@@ -65,7 +65,7 @@ Select your desired plan below:`;
 • *Plan:* ${plan.name} (${plan.durationDays} Days)
 • *Amount:* ₹${plan.amount} (or ⭐️ ${starPrice} Stars)
 
-_Please choose your preferred payment method below:_`;
+${plan.features ? plan.features + '\n\n' : ''}_Please choose your preferred payment method below:_`;
 
     const { getPaymentMethodKeyboard } = await import('../keyboards.js');
     await ctx.editMessageText(methodMsg, {
@@ -120,7 +120,11 @@ _Please choose your preferred payment method below:_`;
     const checkoutMsg = 
 `🌐 *Online Checkout Ready!*
 
-Click the button below to pay via UPI (GPay, PhonePe, Paytm) or Card.
+• *Platform:* ${platform.icon} ${platform.name}
+• *Plan:* ${plan.name} (${plan.durationDays === 36500 ? 'Lifetime' : plan.durationDays + ' Days'})
+• *Amount:* ₹${plan.amount}
+
+${plan.features ? plan.features + '\n\n' : ''}Click the button below to pay via UPI (GPay, PhonePe, Paytm) or Card.
 _Once paid, click Verify Payment._`;
 
     await ctx.editMessageText(checkoutMsg, {

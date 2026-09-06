@@ -112,6 +112,18 @@ export function initBot() {
 export async function startBot() {
   const instance = initBot();
   if (instance) {
+    // Set Bot Commands Menu
+    try {
+      await instance.api.setMyCommands([
+        { command: 'start', description: 'Open Main Menu 🏠' },
+        { command: 'buy', description: 'Buy Premium Subscription 💎' },
+        { command: 'plans', description: 'View All Plans 📋' }
+      ]);
+      console.log('✅ Bot commands menu updated!');
+    } catch (err) {
+      console.error('❌ Failed to set bot commands:', err.message);
+    }
+
     instance.start({
       onStart: (botInfo) => {
         console.log(`🤖 Telegram Payment Bot (@${botInfo.username}) is active and polling!`);

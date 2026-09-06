@@ -20,6 +20,7 @@ router.get('/', (req, res) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Terms & Conditions - ${platformName}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
       --bg-light: #f3f4f6;
@@ -181,6 +182,7 @@ router.get('/', (req, res) => {
     let isDark = true; 
     
     if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
       if (window.Telegram.WebApp.colorScheme === "light") {
         isDark = false;
       }

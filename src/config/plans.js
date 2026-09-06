@@ -109,9 +109,62 @@ export const PLATFORMS = [
     description: 'Unlimited batch auto-forwarding across private/public channels',
     icon: '⏩',
     plans: [
-      { id: '1_MONTH', name: '1 Month Pro', durationDays: 30, amount: 59 },
-      { id: '3_MONTHS', name: '3 Months Pro', durationDays: 90, amount: 149 },
-      { id: '1_YEAR', name: '1 Year VIP', durationDays: 365, amount: 499 },
+      { id: '1_WEEK', name: 'Weekly Plan', durationDays: 7, amount: 49 },
+      { id: '1_MONTH', name: 'Monthly Plan', durationDays: 30, amount: 149 }
+    ].map(plan => ({
+      ...plan,
+      features: `⚡️ *Wʜʏ ᴜᴘɢʀᴀᴅᴇ ᴛᴏ Pʀᴇᴍɪᴜᴍ?*\n├ 🚀 Sᴜᴘᴇʀ Fᴀsᴛ Sᴘᴇᴇᴅ (No Delays)\n├ 🔄 Mᴜʟᴛɪᴘʟᴇ Tᴀsᴋs (Up to 5 Parallel)\n└ 🛡️ Pʀɪᴏʀɪᴛʏ Sᴜᴘᴘᴏʀᴛ`
+    }))
+  },
+  {
+    id: 'BUTTON_BOT',
+    name: '🔘 Button Bot Premium',
+    description: 'Add premium inline buttons and manage auto-adder projects',
+    icon: '🔘',
+    plans: [
+      { 
+        id: '1_MONTH', 
+        name: 'Premium Upgrade', 
+        durationDays: 30, 
+        amount: 99,
+        features: `💎 *PREMIUM PLAN BENEFITS*\n━━━━━━━━━━━━━━━━━━━━━━\nGet Premium features:\n✅ +200 Posts permanently\n✅ 40 Buttons per post (1 Month)\n✅ 5 Auto Adder Projects (1 Month)`
+      }
+    ]
+  },
+  {
+    id: 'EXTRACT_X',
+    name: '🧲 Extract X Bot',
+    description: 'Bypass restricted channels and clone content blazing fast',
+    icon: '🧲',
+    plans: [
+      { 
+        id: 'DAILY_PASS', 
+        name: 'Daily Pass', 
+        durationDays: 1, 
+        amount: 39,
+        features: `⚡️ *DAILY PASS LIMITS:*\n  🔢 Total Tasks: 5\n  🔗 Fast Copy: 100,000 files\n  📦 DL+Upload: 1,000 files\n  📡 Live Monitors: 2\n━━━━━━━━━━━━━━━━━━━━━━\n✅ *All Features Included:*\n• 🔓 Private & restricted channel bypass\n• 🎯 Smart filters (Video/Doc/Photo/Audio)\n• ✏️ Caption Edit, Prefix/Suffix, Replace\n• 🖼️ Custom Thumbnail Override\n• 📤 Multi-destination forwarding\n• ⚡️ Server-side blazing-fast copy\n• 📡 Live auto-forward monitor`
+      },
+      { 
+        id: 'MONTHLY_PRO', 
+        name: 'Monthly Pro', 
+        durationDays: 30, 
+        amount: 259,
+        features: `💎 *MONTHLY PRO LIMITS:*\n  🔢 Total Tasks: 50\n  🔗 Fast Copy: 1,000,000 files\n  📦 DL+Upload: 3,000 files\n  📡 Live Monitors: 5\n━━━━━━━━━━━━━━━━━━━━━━\n✅ *All Features Included:*\n• 🔓 Private & restricted channel bypass\n• 🎯 Smart filters (Video/Doc/Photo/Audio)\n• ✏️ Caption Edit, Prefix/Suffix, Replace\n• 🖼️ Custom Thumbnail Override\n• 📤 Multi-destination forwarding\n• ⚡️ Server-side blazing-fast copy\n• 📡 Live auto-forward monitor`
+      },
+      { 
+        id: 'ULTRA_PASS', 
+        name: 'Ultra Pass (3 Days)', 
+        durationDays: 3, 
+        amount: 389,
+        features: `🚀 *ULTRA PASS LIMITS:*\n  🔢 Total Tasks: ∞ Unlimited\n  🔗 Fast Copy: ∞ Unlimited files\n  📦 DL+Upload: 5,000 files\n  📡 Live Monitors: 15\n━━━━━━━━━━━━━━━━━━━━━━\n✅ *All Features Included:*\n• 🔓 Private & restricted channel bypass\n• 🎯 Smart filters (Video/Doc/Photo/Audio)\n• ✏️ Caption Edit, Prefix/Suffix, Replace\n• 🖼️ Custom Thumbnail Override\n• 📤 Multi-destination forwarding\n• ⚡️ Server-side blazing-fast copy\n• 📡 Live auto-forward monitor`
+      },
+      { 
+        id: 'LIFETIME', 
+        name: 'Lifetime Access', 
+        durationDays: 36500, 
+        amount: 5999,
+        features: `♾️ *LIFETIME LIMITS:*\n  🔢 Total Tasks: ∞ Unlimited\n  🔗 Fast Copy: ∞ Unlimited files\n  📦 DL+Upload: 3,000 files\n  📡 Live Monitors: 30\n━━━━━━━━━━━━━━━━━━━━━━\n✅ *All Features Included:*\n• 🔓 Private & restricted channel bypass\n• 🎯 Smart filters (Video/Doc/Photo/Audio)\n• ✏️ Caption Edit, Prefix/Suffix, Replace\n• 🖼️ Custom Thumbnail Override\n• 📤 Multi-destination forwarding\n• ⚡️ Server-side blazing-fast copy\n• 📡 Live auto-forward monitor`
+      }
     ]
   },
   {

@@ -16,11 +16,14 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
     year: 'numeric',
   });
 
-  // Decide the username of the target bot based on platform (Hardcoded examples, adjust as needed)
+  // Decide the username of the target bot based on platform (Update these to your real bot usernames)
   let targetBotUsername = '';
   if (platformId === 'CINEMAHUB') targetBotUsername = 'CinemaHubBot';
-  if (platformId === 'SHAREBOX') targetBotUsername = 'ShareBoxBot';
-  if (platformId === 'FORWARD') targetBotUsername = 'ForwardBot';
+  if (platformId === 'SHARE_BOX') targetBotUsername = 'ShareBoxBot';
+  if (platformId === 'FORWARD_BOT') targetBotUsername = 'ForwardBot';
+  if (platformId === 'STREAMDROP') targetBotUsername = 'StreamDropBot';
+  if (platformId === 'BUTTON_BOT') targetBotUsername = 'ButtonBot';
+  if (platformId === 'EXTRACT_X') targetBotUsername = 'ExtractXBot';
 
   let ticketText = '';
   if (ticketId && targetBotUsername) {

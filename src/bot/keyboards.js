@@ -46,6 +46,17 @@ export function getPlansKeyboard(platformId) {
 }
 
 /**
+ * Returns terms & conditions agreement keyboard
+ */
+export function getTermsKeyboard(platformId, planId, termsUrl) {
+  const kb = new InlineKeyboard();
+  kb.url('📄 View Terms & Conditions', termsUrl).row();
+  kb.text('✅ Yes, I Agree', `agree_terms:${platformId}:${planId}`).row();
+  kb.text('🔙 Back to Plans', `select_platform:${platformId}`);
+  return kb;
+}
+
+/**
  * Returns payment method selection keyboard
  */
 export function getPaymentMethodKeyboard(platformId, planId, amount) {

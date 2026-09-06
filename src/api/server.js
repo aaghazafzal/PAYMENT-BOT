@@ -4,6 +4,7 @@ import { config } from '../config/env.js';
 import paymentRoutes from './routes/payment.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import ecosystemRoutes from './routes/ecosystem.routes.js';
+import pagesRoutes from './routes/pages.routes.js';
 
 export function createServer() {
   const app = express();
@@ -27,6 +28,9 @@ export function createServer() {
   app.use('/api/v1/payment', paymentRoutes);
   app.use('/api/v1/webhook', webhookRoutes);
   app.use('/api/v1/ecosystem', ecosystemRoutes);
+  
+  // Public UI Routes
+  app.use('/terms', pagesRoutes);
 
   return app;
 }

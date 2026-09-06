@@ -83,7 +83,7 @@ Select your desired plan below:`;
     return str.replace(/\*(.*?)\*/g, '<b>$1</b>').replace(/_(.*?)_/g, '<i>$1</i>');
   };
 
-  // 3. Select Plan -> Ask for Payment Method
+  // 3. Select Plan -> Ask for Terms & Conditions Agreement
   if (data.startsWith('select_plan:')) {
     const [, platformId, planId] = data.split(':');
     const platform = getPlatformById(platformId);
@@ -95,6 +95,37 @@ Select your desired plan below:`;
     }
 
     await ctx.answerCallbackQuery();
+    
+    const termsUrl = `https://payment.univora.website/terms?platform=${platformId}&plan=${planId}`;
+    
+    const termsMsg = 
+`⚠️ <b>Terms & Conditions Agreement</b>
+
+Before proceeding to checkout for <b>${platform.name}</b>, please review our terms of service.
+
+By clicking "Yes, I Agree", you acknowledge that you have read and accepted our strict <b>No-Refund Policy</b> and Usage Terms.`;
+
+    const { getTermsKeyboard } = await import('../keyboards.js');
+    await ctx.editMessageText(termsMsg, {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      reply_markup: getTermsKeyboard(platformId, planId, termsUrl),
+    });
+    return;
+  }
+
+  // 3.5. Agree Terms -> Ask for Payment Method
+  if (data.startsWith('agree_terms:')) {
+    const [, platformId, planId] = data.split(':');
+    const platform = getPlatformById(platformId);
+    const plan = getPlan(platformId, planId);
+
+    if (!platform || !plan) {
+      await ctx.answerCallbackQuery({ text: 'Plan invalid or expired!', show_alert: true });
+      return;
+    }
+
+    await ctx.answerCallbackQuery({ text: 'Terms accepted!' });
     
     // Convert INR to Stars (Assume 1 INR = 1 Star for simplicity/safety against Apple 30% tax)
     const starPrice = plan.amount; 

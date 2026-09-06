@@ -22,6 +22,10 @@ export function initBot() {
     const { handleReport } = await import('./handlers/start.js');
     return handleReport(ctx);
   });
+  bot.command(['subscriptions', 'subs', 'mysubs'], async (ctx) => {
+    const { handleMySubscriptions } = await import('./handlers/start.js');
+    return handleMySubscriptions(ctx);
+  });
 
   // Register admin handlers
   handleAdminCommands(bot);
@@ -31,6 +35,9 @@ export function initBot() {
     const data = ctx.callbackQuery.data;
     if (data.startsWith('verify_pay:')) {
       await handleVerifyPayment(ctx);
+    } else if (data.startsWith('br_')) {
+      const { handleAdminCallbacks } = await import('./handlers/admin.js');
+      await handleAdminCallbacks(ctx);
     } else {
       await handlePlatformCallbacks(ctx);
     }
@@ -122,9 +129,27 @@ export async function startBot() {
         { command: 'start', description: 'Open Main Menu 🏠' },
         { command: 'buy', description: 'Buy Premium Subscription 💎' },
         { command: 'plans', description: 'View All Plans 📋' },
+        { command: 'subscriptions', description: 'My Active Subscriptions 👑' },
         { command: 'report', description: 'Report a Bug or Issue 🐞' }
       ]);
       console.log('✅ Bot commands menu updated!');
+      
+      // Set Admin Commands for specific admins
+      if (config.adminIds && config.adminIds.length > 0) {
+        for (const adminId of config.adminIds) {
+          try {
+            await instance.api.setMyCommands([
+              { command: 'start', description: 'Open Main Menu 🏠' },
+              { command: 'admin', description: 'Admin Dashboard 📊' },
+              { command: 'broadcast', description: 'Broadcast Message 📢' },
+              { command: 'grant', description: 'Grant VIP Access 🎁' },
+              { command: 'revoke', description: 'Revoke VIP Access ❌' }
+            ], { scope: { type: 'chat', chat_id: parseInt(adminId, 10) } });
+          } catch (err) {
+            console.error(`❌ Failed to set admin commands for ${adminId}:`, err.message);
+          }
+        }
+      }
     } catch (err) {
       console.error('❌ Failed to set bot commands:', err.message);
     }

@@ -74,4 +74,106 @@ export async function handleAdminCommands(bot) {
 
     await ctx.reply(`❌ Revoked VIP access for user \`${telegramId}\` on platform *${platformId}*.`, { parse_mode: 'Markdown' });
   });
+  // 4. /broadcast (reply to a message)
+  bot.command('broadcast', async (ctx) => {
+    if (!isAdmin(ctx.from?.id)) return;
+    
+    if (!ctx.message.reply_to_message) {
+      return ctx.reply('⚠️ Please reply to the message you want to broadcast with `/broadcast`', { parse_mode: 'Markdown' });
+    }
+
+    const messageIdToCopy = ctx.message.reply_to_message.message_id;
+    const adminId = ctx.from.id;
+
+    broadcastState.set(adminId, messageIdToCopy);
+
+    const { InlineKeyboard } = await import('grammy');
+    const kb = new InlineKeyboard();
+    kb.text('📌 Yes, Pin it', `br_start:pin`).row();
+    kb.text('📤 No, Just Send', `br_start:nopin`).row();
+    kb.text('❌ Cancel', `br_cancel`);
+
+    await ctx.reply('📢 *Broadcast Ready*\n\nDo you want to automatically pin this message for all users when they receive it?', {
+      parse_mode: 'Markdown',
+      reply_markup: kb
+    });
+  });
+}
+
+const broadcastState = new Map(); // AdminId -> MessageId
+
+export async function handleAdminCallbacks(ctx) {
+  const data = ctx.callbackQuery?.data;
+  if (!data) return;
+
+  const adminId = ctx.from.id;
+  if (!isAdmin(adminId)) {
+    return ctx.answerCallbackQuery('⛔ Unauthorized.');
+  }
+
+  if (data === 'br_cancel') {
+    broadcastState.delete(adminId);
+    await ctx.editMessageText('❌ Broadcast Cancelled.');
+    return;
+  }
+
+  if (data.startsWith('br_start:')) {
+    const shouldPin = data.split(':')[1] === 'pin';
+    const messageId = broadcastState.get(adminId);
+    
+    if (!messageId) {
+      return ctx.editMessageText('❌ Broadcast state expired or invalid. Please reply to the message with /broadcast again.');
+    }
+
+    await ctx.editMessageText('⏳ *Broadcast is running...*', { parse_mode: 'Markdown' });
+    
+    // Import User model
+    const { User } = await import('../../db/models/User.js');
+    const users = await User.find({}, 'telegramId');
+    
+    let success = 0, failed = 0, blocked = 0, deleted = 0;
+    const startTime = Date.now();
+    const total = users.length;
+
+    // Send asynchronously in chunks to prevent blocking
+    // In a real large-scale prod app, you would use a bull queue, 
+    // but for 2-5k users, this simple loop with a small delay works fine.
+    for (const user of users) {
+      try {
+        const sentMsg = await ctx.api.copyMessage(user.telegramId, ctx.chat.id, messageId);
+        
+        if (shouldPin && sentMsg.message_id) {
+          try {
+            await ctx.api.pinChatMessage(user.telegramId, sentMsg.message_id, { disable_notification: false });
+          } catch (e) {
+            // ignore pin errors
+          }
+        }
+        success++;
+      } catch (err) {
+        const desc = err.description || '';
+        if (desc.includes('bot was blocked by the user')) blocked++;
+        else if (desc.includes('user is deactivated') || desc.includes('deleted')) deleted++;
+        else failed++;
+      }
+      
+      // Prevent flood limits (approx 30 msgs / sec)
+      await new Promise(res => setTimeout(res, 35));
+    }
+
+    const timeSecs = Math.floor((Date.now() - startTime) / 1000);
+    broadcastState.delete(adminId);
+
+    const summary = 
+`✅ *Broadcast Completed.*
+
+🕒 Time: ${timeSecs}s
+👥 Total: ${total}
+📬 Success: ${success}
+⛔ Blocked: ${blocked}
+🗑️ Deleted: ${deleted}
+❌ Failed: ${failed}`;
+
+    await ctx.editMessageText(summary, { parse_mode: 'Markdown' });
+  }
 }

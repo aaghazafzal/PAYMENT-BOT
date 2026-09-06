@@ -24,7 +24,6 @@ export function getPlatformsKeyboard() {
     kb.text(p.name, `select_platform:${p.id}`).row();
   });
   
-  kb.text('💳 My Subscriptions', 'my_subscriptions').row();
   kb.text('🔙 Back to Main Menu', 'back_to_menu').row();
   return kb;
 }

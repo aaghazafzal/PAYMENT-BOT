@@ -265,39 +265,4 @@ ${featuresHtml}Click the button below to pay via UPI (GPay, PhonePe, Paytm) or C
     }
     return;
   }
-
-  // 4. View My Subscriptions
-  if (data === 'my_subscriptions') {
-    await ctx.answerCallbackQuery();
-    const telegramId = String(ctx.from.id);
-    const now = new Date();
-
-    const subs = await Subscription.find({
-      telegramId,
-      isPremium: true,
-      expiresAt: { $gt: now },
-    });
-
-    if (subs.length === 0) {
-      await ctx.editMessageText('❌ You currently have no active premium subscriptions.', {
-        reply_markup: getPlatformsKeyboard(),
-      });
-      return;
-    }
-
-    let msg = `👑 <b>Your Active Subscriptions:</b> \n\n`;
-    subs.forEach(s => {
-      const p = getPlatformById(s.platformId);
-      const expiry = new Date(s.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-      const pName = p ? `<a href="https://t.me/${p.botUsername}">${p.name}</a>` : `<b>${s.platformId}</b>`;
-      msg += `• ${pName}: Valid until ${expiry}\n`;
-    });
-
-    await ctx.editMessageText(msg, {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      reply_markup: getPlatformsKeyboard(),
-    });
-    return;
-  }
 }

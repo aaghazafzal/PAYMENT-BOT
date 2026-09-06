@@ -166,39 +166,6 @@ export const PLATFORMS = [
         features: `♾️ *LIFETIME LIMITS:*\n  🔢 Total Tasks: ∞ Unlimited\n  🔗 Fast Copy: ∞ Unlimited files\n  📦 DL+Upload: 3,000 files\n  📡 Live Monitors: 30\n━━━━━━━━━━━━━━━━━━━━━━\n✅ *All Features Included:*\n• 🔓 Private & restricted channel bypass\n• 🎯 Smart filters (Video/Doc/Photo/Audio)\n• ✏️ Caption Edit, Prefix/Suffix, Replace\n• 🖼️ Custom Thumbnail Override\n• 📤 Multi-destination forwarding\n• ⚡️ Server-side blazing-fast copy\n• 📡 Live auto-forward monitor`
       }
     ]
-  },
-  {
-    id: 'INSTA_AUTOMATION',
-    name: '📸 Insta Automation Pro',
-    description: 'Scheduled uploads, automated reel downloads and analytics',
-    icon: '📸',
-    plans: [
-      { id: '1_MONTH', name: '1 Month Pro', durationDays: 30, amount: 79 },
-      { id: '3_MONTHS', name: '3 Months Pro', durationDays: 90, amount: 199 },
-      { id: '1_YEAR', name: '1 Year Unlimited', durationDays: 365, amount: 599 },
-    ]
-  },
-  {
-    id: 'ECHO_TRACE',
-    name: '🔍 Echo Trace Bot VIP',
-    description: 'Deep OSINT search, identity lookup & advanced tracing tools',
-    icon: '🔍',
-    plans: [
-      { id: '1_MONTH', name: '1 Month Search Pass', durationDays: 30, amount: 99 },
-      { id: '3_MONTHS', name: '3 Months Search Pass', durationDays: 90, amount: 249 },
-      { id: '1_YEAR', name: '1 Year Search Pass', durationDays: 365, amount: 799 },
-    ]
-  },
-  {
-    id: 'UNIVORA_WEB_HUB',
-    name: '🌐 Univora Web Hub Premium',
-    description: 'Access premium web tools, web player, and unified user dashboard',
-    icon: '🌐',
-    plans: [
-      { id: '1_MONTH', name: '1 Month Web Pass', durationDays: 30, amount: 89 },
-      { id: '3_MONTHS', name: '3 Months Web Pass', durationDays: 90, amount: 219 },
-      { id: '1_YEAR', name: '1 Year Web Pass', durationDays: 365, amount: 699 },
-    ]
   }
 ];
 

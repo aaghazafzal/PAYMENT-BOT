@@ -169,9 +169,9 @@ _Once paid, click Verify Payment._`;
         title,
         description,
         payload,
-        '', // Provider token must be empty for XTR
         currency,
-        prices
+        prices,
+        { provider_token: "" } // Explicitly empty for XTR
       );
     } catch (err) {
       console.error('Failed to send invoice:', err);

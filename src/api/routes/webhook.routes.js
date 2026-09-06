@@ -1,6 +1,9 @@
 import express from 'express';
+import axios from 'axios';
+import { config } from '../config/env.js';
 import { cashfreeWebhookMiddleware } from '../middleware/verifyCashfree.js';
 import { Order } from '../../db/models/Order.js';
+import { Ticket } from '../../db/models/Ticket.js';
 import { getCashfreeOrderStatus } from '../../services/cashfree.service.js';
 import { grantSubscription } from '../../services/subscription.service.js';
 import { sendPaymentReceipt } from '../../services/notify.service.js';
@@ -49,23 +52,59 @@ router.post('/cashfree', cashfreeWebhookMiddleware, async (req, res) => {
         order.rawWebhookData = payload;
         await order.save();
 
-        const sub = await grantSubscription({
-          telegramId: order.telegramId,
-          platformId: order.platformId,
-          planId: order.planId,
-          orderId: order.orderId,
-        });
+        if (order.isGatewayOrder && order.callbackUrl) {
+          console.log(`🌐 Dispatching Webhook to Target Bot: ${order.targetBot} at ${order.callbackUrl}`);
+          try {
+            await axios.post(order.callbackUrl, {
+              status: 'SUCCESS',
+              orderId: order.orderId,
+              userId: order.telegramId,
+              planId: order.planId,
+              platformId: order.platformId,
+              amount: order.amount,
+              timestamp: new Date().toISOString()
+            }, {
+              headers: {
+                'x-ecosystem-secret': config.ecosystemSecret
+              }
+            });
+            order.webhookSent = true;
+            await order.save();
+            console.log(`✅ Outbound Webhook delivered successfully to ${order.targetBot}`);
+          } catch (wbhkErr) {
+            console.error(`🚨 Failed to deliver webhook to ${order.targetBot}:`, wbhkErr.message);
+          }
+        } else {
+          // Internal Database Update for Payment Bot
+          const sub = await grantSubscription({
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
 
-        await sendPaymentReceipt({
-          telegramId: order.telegramId,
-          orderId: order.orderId,
-          platformId: order.platformId,
-          planId: order.planId,
-          amount: order.amount,
-          expiresAt: sub.expiresAt,
-        });
+          // Generate Claim Ticket for Option 2 Ecosystem Setup
+          const ticketId = `UNV-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          const newTicket = new Ticket({
+            ticketId,
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+          await newTicket.save();
 
-        console.log(`✅ Webhook verified & Premium granted to ${order.telegramId} for ${order.platformId}`);
+          await sendPaymentReceipt({
+            telegramId: order.telegramId,
+            orderId: order.orderId,
+            platformId: order.platformId,
+            planId: order.planId,
+            amount: order.amount,
+            expiresAt: sub.expiresAt,
+            ticketId: ticketId
+          });
+          console.log(`✅ Webhook verified & Premium granted internally to ${order.telegramId} for ${order.platformId}. Ticket: ${ticketId}`);
+        }
       }
     }
 

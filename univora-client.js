@@ -1,35 +1,63 @@
+// ==========================================
+// UNIVORA ECOSYSTEM PAYMENT CLIENT
+// Drop this file into your other bots (CinemaHub, ShareBox, etc.)
+// ==========================================
+
+import axios from 'axios';
+
+// Required environment variables for target bot
+const PAYMENT_SERVER_URL = process.env.PAYMENT_SERVER_URL || 'https://payment.univora.website';
+const ECOSYSTEM_SECRET = process.env.ECOSYSTEM_API_SECRET || 'univora_ultra_secret_key_2026_change_me';
+
+const api = axios.create({
+  baseURL: `${PAYMENT_SERVER_URL}/api/v1/ecosystem`,
+  headers: {
+    'x-ecosystem-secret': ECOSYSTEM_SECRET
+  }
+});
+
 /**
- * Univora Subscription Client Helper for Ecosystem Bots & Websites
- * Copy this file into your other bots/websites to check premium access in 1 line!
- * 
- * Usage:
- * import { checkUnivoraPremium } from './univora-client.js';
- * 
- * const isVIP = await checkUnivoraPremium('123456789', 'UNIVORA_BOT_A');
- * if (isVIP) { ... }
+ * METHOD 1 (Read-Only Check): Check if user has active premium
  */
-
-const UNIVORA_PAYMENT_API_URL = process.env.UNIVORA_API_URL || 'http://localhost:5000';
-const UNIVORA_API_SECRET = process.env.ECOSYSTEM_API_SECRET || 'univora_ultra_secret_key_2026';
-
-export async function checkUnivoraPremium(userId, platformId) {
+export async function checkPremium(userId, platformId) {
   try {
-    const url = `${UNIVORA_PAYMENT_API_URL}/api/v1/ecosystem/subscription?user_id=${encodeURIComponent(userId)}&platform_id=${encodeURIComponent(platformId)}`;
-    const response = await fetch(url, {
-      headers: {
-        'X-Univora-Secret': UNIVORA_API_SECRET
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`⚠️ Univora Subscription API HTTP Error: ${response.status}`);
-      return false;
-    }
-
-    const json = await response.json();
-    return json.data?.isPremium === true;
+    const res = await api.get(`/subscription?user_id=${userId}&platform_id=${platformId}`);
+    return res.data?.data?.active || false;
   } catch (err) {
-    console.error('❌ Failed to verify Univora premium status:', err.message);
+    console.error('[UnivoraClient] Premium Check Failed:', err.message);
     return false;
+  }
+}
+
+/**
+ * METHOD 2 (Option 1 - Gateway Flow): Create a Checkout Link for a user natively in your bot.
+ * When the user pays, Payment Bot will send a POST request to your callbackUrl.
+ */
+export async function createCheckout(targetBot, userId, planId, amount, callbackUrl) {
+  try {
+    const res = await api.post(`/create-checkout`, {
+      targetBot, userId, planId, amount, callbackUrl
+    });
+    return res.data?.data?.checkoutUrl || null;
+  } catch (err) {
+    console.error('[UnivoraClient] Create Checkout Failed:', err.message);
+    return null;
+  }
+}
+
+/**
+ * METHOD 3 (Option 2 - Ticket Flow): Claim a Ticket passed via Deep Link.
+ * Call this when user clicks /start claim_UNV-1234
+ */
+export async function claimTicket(ticketId, platformId, telegramId) {
+  try {
+    const res = await api.post(`/verify-ticket`, {
+      ticketId, platformId, telegramId
+    });
+    // Returns: { status: 'success', data: { planId, orderId, telegramId } }
+    return res.data;
+  } catch (err) {
+    console.error('[UnivoraClient] Claim Ticket Failed:', err.response?.data?.message || err.message);
+    return { status: 'error', message: err.response?.data?.message || err.message };
   }
 }

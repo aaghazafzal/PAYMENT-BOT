@@ -16,6 +16,9 @@ const orderSchema = new mongoose.Schema({
   },
   paymentSessionId: { type: String, default: '' },
   paymentLink: { type: String, default: '' },
+  isGatewayOrder: { type: Boolean, default: false },
+  targetBot: { type: String },
+  callbackUrl: { type: String },
   cfPaymentId: { type: String, default: '' }, // Cashfree payment ID
   paymentMethod: { type: String, default: '' },
   verifiedAt: { type: Date, default: null },

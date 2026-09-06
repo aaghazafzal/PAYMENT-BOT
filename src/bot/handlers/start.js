@@ -121,3 +121,18 @@ export async function handleMySubscriptions(ctx) {
     disable_web_page_preview: true,
   });
 }
+
+export async function handlePrivacy(ctx) {
+  const { InlineKeyboard } = await import('grammy');
+  const { config } = await import('../../config/env.js');
+  
+  const msg = `🛡️ <b>Privacy Policy & Terms</b>\n\nPlease read our Privacy Policy and Terms & Conditions to understand how we handle your data, usage limits, and refund policies.`;
+  
+  const kb = new InlineKeyboard();
+  kb.webApp('📄 View Privacy Policy', `${config.serverUrl}/terms`);
+  
+  await ctx.reply(msg, {
+    parse_mode: 'HTML',
+    reply_markup: kb
+  });
+}

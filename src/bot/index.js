@@ -26,6 +26,10 @@ export function initBot() {
     const { handleMySubscriptions } = await import('./handlers/start.js');
     return handleMySubscriptions(ctx);
   });
+  bot.command(['privacy', 'terms', 'policy'], async (ctx) => {
+    const { handlePrivacy } = await import('./handlers/start.js');
+    return handlePrivacy(ctx);
+  });
 
   // Register admin handlers
   handleAdminCommands(bot);
@@ -130,6 +134,7 @@ export async function startBot() {
         { command: 'plans', description: 'View All Plans 📋' },
         { command: 'buy', description: 'Buy Premium Subscription 💎' },
         { command: 'subscriptions', description: 'My Active Subscriptions 👑' },
+        { command: 'privacy', description: 'Privacy Policy & Terms 🛡️' },
         { command: 'report', description: 'Report a Bug or Issue 🐞' }
       ];
 

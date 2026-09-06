@@ -8,6 +8,40 @@ export async function handlePlatformCallbacks(ctx) {
   const data = ctx.callbackQuery?.data;
   if (!data) return;
 
+  if (data === 'show_platforms') {
+    const { handleShowPlatforms } = await import('./start.js');
+    return handleShowPlatforms(ctx);
+  }
+
+  if (data === 'help_menu') {
+    await ctx.answerCallbackQuery();
+    const helpMsg = 
+`❓ *Help & Support*
+
+*How to buy premium?*
+1. Click "Buy Subscription".
+2. Select the bot you want premium for.
+3. Choose your plan.
+4. Pay securely via Telegram Stars or Online (Cards/UPI).
+
+*How to activate?*
+If you pay with Telegram Stars or Online natively, you will get an Activation Ticket (UNV-XXXX). Send that ticket to the respective bot to instantly claim your premium!
+
+If you face any issues, contact our support team in the Official Channel.`;
+    
+    const { InlineKeyboard } = await import('grammy');
+    const kb = new InlineKeyboard().text('🔙 Back to Menu', 'back_to_menu');
+    await ctx.editMessageText(helpMsg, { parse_mode: 'Markdown', reply_markup: kb });
+    return;
+  }
+
+  if (data === 'back_to_menu') {
+    const { handleStart } = await import('./start.js');
+    await ctx.answerCallbackQuery();
+    await ctx.deleteMessage().catch(() => {});
+    return handleStart(ctx); // Re-send the welcome message
+  }
+
   // 1. Back to Platforms
   if (data === 'back_to_platforms') {
     await ctx.answerCallbackQuery();

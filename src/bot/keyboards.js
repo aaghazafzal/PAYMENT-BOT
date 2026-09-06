@@ -2,6 +2,18 @@ import { InlineKeyboard } from 'grammy';
 import { PLATFORMS, getPlatformById } from '../config/plans.js';
 
 /**
+ * Returns the Main Menu keyboard (for /start)
+ */
+export function getMainMenuKeyboard() {
+  const kb = new InlineKeyboard();
+  kb.text('💎 Buy Subscription', 'show_platforms').row();
+  kb.url('📢 Official Channel', 'https://t.me/univora88').row();
+  kb.url('🌐 Visit Website', 'https://univora.website').row();
+  kb.text('❓ Help & Support', 'help_menu').row();
+  return kb;
+}
+
+/**
  * Returns platform selection keyboard
  */
 export function getPlatformsKeyboard() {
@@ -12,6 +24,7 @@ export function getPlatformsKeyboard() {
   });
   
   kb.text('💳 My Subscriptions', 'my_subscriptions').row();
+  kb.text('🔙 Back to Main Menu', 'back_to_menu').row();
   return kb;
 }
 

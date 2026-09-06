@@ -125,26 +125,30 @@ export async function startBot() {
   if (instance) {
     // Set Bot Commands Menu
     try {
-      await instance.api.setMyCommands([
+      const baseCommands = [
         { command: 'start', description: 'Open Main Menu 🏠' },
-        { command: 'buy', description: 'Buy Premium Subscription 💎' },
         { command: 'plans', description: 'View All Plans 📋' },
+        { command: 'buy', description: 'Buy Premium Subscription 💎' },
         { command: 'subscriptions', description: 'My Active Subscriptions 👑' },
         { command: 'report', description: 'Report a Bug or Issue 🐞' }
-      ]);
+      ];
+
+      await instance.api.setMyCommands(baseCommands);
       console.log('✅ Bot commands menu updated!');
       
       // Set Admin Commands for specific admins
       if (config.adminIds && config.adminIds.length > 0) {
+        const adminCommands = [
+          ...baseCommands,
+          { command: 'admin', description: 'Admin Dashboard 📊' },
+          { command: 'broadcast', description: 'Broadcast Message 📢' },
+          { command: 'grant', description: 'Grant VIP Access 🎁' },
+          { command: 'revoke', description: 'Revoke VIP Access ❌' }
+        ];
+
         for (const adminId of config.adminIds) {
           try {
-            await instance.api.setMyCommands([
-              { command: 'start', description: 'Open Main Menu 🏠' },
-              { command: 'admin', description: 'Admin Dashboard 📊' },
-              { command: 'broadcast', description: 'Broadcast Message 📢' },
-              { command: 'grant', description: 'Grant VIP Access 🎁' },
-              { command: 'revoke', description: 'Revoke VIP Access ❌' }
-            ], { scope: { type: 'chat', chat_id: parseInt(adminId, 10) } });
+            await instance.api.setMyCommands(adminCommands, { scope: { type: 'chat', chat_id: parseInt(adminId, 10) } });
           } catch (err) {
             console.error(`❌ Failed to set admin commands for ${adminId}:`, err.message);
           }

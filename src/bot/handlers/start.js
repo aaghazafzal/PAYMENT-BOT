@@ -25,23 +25,27 @@ export async function handleStart(ctx) {
     // For now, if they somehow get here, we just show the normal start.
   }
 
-  const firstName = tgUser.first_name.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-  const botUsername = ctx.me.username;
+  // Simple escaping for HTML to prevent injection
+  const escapeHtml = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  const firstName = escapeHtml(tgUser.first_name);
+  const botUsername = escapeHtml(ctx.me.username);
+  const botName = escapeHtml('PAYMENT BOT [UNIVORA]'); // Now it won't break because HTML doesn't care about brackets
 
   const welcomeMessage = 
-`👋 Welcome [${firstName}](tg://user?id=${tgUser.id}) to [PAYMENT BOT [UNIVORA]](https://t.me/${botUsername})! 👑
+`👋 Welcome <a href="tg://user?id=${tgUser.id}">${firstName}</a> to <a href="https://t.me/${botUsername}">${botName}</a>! 👑
 
-Elevate your experience across the entire *Univora Ecosystem*. Securely unlock premium access for all our Telegram Bots and Web Apps!
+Elevate your experience across the entire <b>Univora Ecosystem</b>. Securely unlock premium access for all our Telegram Bots and Web Apps!
 
-⚡ *What you can do here:*
+⚡ <b>What you can do here:</b>
 • Buy VIP passes for any Univora Bot
-• Instant & Automated Activation
+• Instant &amp; Automated Activation
 • Manage your active subscriptions
 
-👇 *Choose an option below to get started:*`;
+👇 <b>Choose an option below to get started:</b>`;
 
   await ctx.reply(welcomeMessage, {
-    parse_mode: 'Markdown',
+    parse_mode: 'HTML',
     disable_web_page_preview: true,
     reply_markup: getMainMenuKeyboard(),
   });

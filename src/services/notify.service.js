@@ -16,36 +16,31 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
     year: 'numeric',
   });
 
-  // Decide the username of the target bot based on platform (Update these to your real bot usernames)
-  let targetBotUsername = '';
-  if (platformId === 'CINEMAHUB') targetBotUsername = 'CinemaHubBot';
-  if (platformId === 'SHARE_BOX') targetBotUsername = 'ShareBoxBot';
-  if (platformId === 'FORWARD_BOT') targetBotUsername = 'ForwardBot';
-  if (platformId === 'STREAMDROP') targetBotUsername = 'StreamDropBot';
-  if (platformId === 'BUTTON_BOT') targetBotUsername = 'ButtonBot';
-  if (platformId === 'EXTRACT_X') targetBotUsername = 'ExtractXBot';
+  const targetBotUsername = platform ? platform.botUsername : '';
 
   let ticketText = '';
   if (ticketId && targetBotUsername) {
-    ticketText = `\n\n🎯 *Action Required:*\nClick the link below to instantly activate this plan in ${platform ? platform.name : platformId}:\n👉 [Click to Activate!](https://t.me/${targetBotUsername}?start=claim_${ticketId})`;
+    ticketText = `\n\n🎯 <b>Action Required:</b>\nClick the link below to instantly activate this plan in <a href="https://t.me/${targetBotUsername}">${platform.name}</a>:\n👉 <a href="https://t.me/${targetBotUsername}?start=claim_${ticketId}">Click to Activate!</a>`;
   } else if (ticketId) {
-    ticketText = `\n\n🎯 *Activation Ticket:*\nUse this code in the target bot to activate: \`${ticketId}\``;
+    ticketText = `\n\n🎯 <b>Activation Ticket:</b>\nUse this code in the target bot to activate: <code>${ticketId}</code>`;
   }
 
-  const message = 
-`🎉 *Payment Successful!*
+  const pName = platform ? `<a href="https://t.me/${platform.botUsername}">${platform.name}</a>` : platformId;
 
-✨ *Order Details:*
-• *Order ID:* \`${orderId}\`
-• *Platform:* ${platform ? platform.name : platformId}
-• *Plan:* ${plan ? plan.name : planId}
-• *Amount Paid:* ₹${amount}
-• *Valid Until:* *${expiryFormatted}*${ticketText}
+  const message = 
+`🎉 <b>Payment Successful!</b>
+
+✨ <b>Order Details:</b>
+• <b>Order ID:</b> <code>${orderId}</code>
+• <b>Platform:</b> ${pName}
+• <b>Plan:</b> ${plan ? plan.name : planId}
+• <b>Amount Paid:</b> ₹${amount}
+• <b>Valid Until:</b> <b>${expiryFormatted}</b>${ticketText}
 
 🚀 Thank you for choosing Univora.`;
 
   try {
-    await bot.api.sendMessage(telegramId, message, { parse_mode: 'Markdown' });
+    await bot.api.sendMessage(telegramId, message, { parse_mode: 'HTML', disable_web_page_preview: true });
   } catch (err) {
     console.error(`❌ Failed to send Telegram receipt to ${telegramId}:`, err.message);
   }

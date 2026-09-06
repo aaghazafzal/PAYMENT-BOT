@@ -20,7 +20,7 @@ export function getPlatformsKeyboard() {
   const kb = new InlineKeyboard();
   
   PLATFORMS.forEach(p => {
-    kb.text(`${p.icon} ${p.name}`, `select_platform:${p.id}`).row();
+    kb.text(p.name, `select_platform:${p.id}`).row();
   });
   
   kb.text('💳 My Subscriptions', 'my_subscriptions').row();

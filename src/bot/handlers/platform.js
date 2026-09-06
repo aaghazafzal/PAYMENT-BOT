@@ -16,22 +16,22 @@ export async function handlePlatformCallbacks(ctx) {
   if (data === 'help_menu') {
     await ctx.answerCallbackQuery();
     const helpMsg = 
-`❓ *Help & Support*
+`❓ <b>Help & Support</b>
 
-*How to buy premium?*
+<b>How to buy premium?</b>
 1. Click "Buy Subscription".
 2. Select the bot you want premium for.
 3. Choose your plan.
 4. Pay securely via Telegram Stars or Online (Cards/UPI).
 
-*How to activate?*
+<b>How to activate?</b>
 If you pay with Telegram Stars or Online natively, you will get an Activation Ticket (UNV-XXXX). Send that ticket to the respective bot to instantly claim your premium!
 
 If you face any issues, contact our support team in the Official Channel.`;
     
     const { InlineKeyboard } = await import('grammy');
     const kb = new InlineKeyboard().text('🔙 Back to Menu', 'back_to_menu');
-    await ctx.editMessageText(helpMsg, { parse_mode: 'Markdown', reply_markup: kb });
+    await ctx.editMessageText(helpMsg, { parse_mode: 'HTML', reply_markup: kb });
     return;
   }
 
@@ -45,8 +45,8 @@ If you face any issues, contact our support team in the Official Channel.`;
   // 1. Back to Platforms
   if (data === 'back_to_platforms') {
     await ctx.answerCallbackQuery();
-    await ctx.editMessageText('👇 *Select a platform to choose your plan:*', {
-      parse_mode: 'Markdown',
+    await ctx.editMessageText('👇 <b>Select a platform to choose your plan:</b>', {
+      parse_mode: 'HTML',
       reply_markup: getPlatformsKeyboard(),
     });
     return;
@@ -64,17 +64,24 @@ If you face any issues, contact our support team in the Official Channel.`;
 
     await ctx.answerCallbackQuery();
     const msg = 
-`${platform.icon} *${platform.name}*
-_${platform.description}_
+`<b><a href="https://t.me/${platform.botUsername}">${platform.name}</a></b>
+<i>${platform.description}</i>
 
 Select your desired plan below:`;
 
     await ctx.editMessageText(msg, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
       reply_markup: getPlansKeyboard(platformId),
     });
     return;
   }
+
+  // Helper for Markdown to HTML
+  const parseMdToHtml = (str) => {
+    if (!str) return '';
+    return str.replace(/\*(.*?)\*/g, '<b>$1</b>').replace(/_(.*?)_/g, '<i>$1</i>');
+  };
 
   // 3. Select Plan -> Ask for Payment Method
   if (data.startsWith('select_plan:')) {
@@ -91,19 +98,21 @@ Select your desired plan below:`;
     
     // Convert INR to Stars (Assume 1 INR = 1 Star for simplicity/safety against Apple 30% tax)
     const starPrice = plan.amount; 
+    const featuresHtml = plan.features ? parseMdToHtml(plan.features) + '\n\n' : '';
 
     const methodMsg = 
-`💳 *Checkout Created!*
+`💳 <b>Checkout Created!</b>
 
-• *Platform:* ${platform.icon} ${platform.name}
-• *Plan:* ${plan.name} (${plan.durationDays} Days)
-• *Amount:* ₹${plan.amount} (or ⭐️ ${starPrice} Stars)
+• <b>Platform:</b> <a href="https://t.me/${platform.botUsername}">${platform.name}</a>
+• <b>Plan:</b> ${plan.name} (${plan.durationDays} Days)
+• <b>Amount:</b> ₹${plan.amount} (or ⭐️ ${starPrice} Stars)
 
-${plan.features ? plan.features + '\n\n' : ''}_Please choose your preferred payment method below:_`;
+${featuresHtml}<i>Please choose your preferred payment method below:</i>`;
 
     const { getPaymentMethodKeyboard } = await import('../keyboards.js');
     await ctx.editMessageText(methodMsg, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
       reply_markup: getPaymentMethodKeyboard(platformId, planId, plan.amount),
     });
     return;
@@ -151,18 +160,20 @@ ${plan.features ? plan.features + '\n\n' : ''}_Please choose your preferred paym
     order.status = 'ACTIVE';
     await order.save();
 
+    const featuresHtml = plan.features ? parseMdToHtml(plan.features) + '\n\n' : '';
     const checkoutMsg = 
-`🌐 *Online Checkout Ready!*
+`🌐 <b>Online Checkout Ready!</b>
 
-• *Platform:* ${platform.icon} ${platform.name}
-• *Plan:* ${plan.name} (${plan.durationDays === 36500 ? 'Lifetime' : plan.durationDays + ' Days'})
-• *Amount:* ₹${plan.amount}
+• <b>Platform:</b> <a href="https://t.me/${platform.botUsername}">${platform.name}</a>
+• <b>Plan:</b> ${plan.name} (${plan.durationDays === 36500 ? 'Lifetime' : plan.durationDays + ' Days'})
+• <b>Amount:</b> ₹${plan.amount}
 
-${plan.features ? plan.features + '\n\n' : ''}Click the button below to pay via UPI (GPay, PhonePe, Paytm) or Card.
-_Once paid, click Verify Payment._`;
+${featuresHtml}Click the button below to pay via UPI (GPay, PhonePe, Paytm) or Card.
+<i>Once paid, click Verify Payment.</i>`;
 
     await ctx.editMessageText(checkoutMsg, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
       reply_markup: getCheckoutKeyboard(cfOrder.paymentLink, orderId),
     });
     return;
@@ -237,15 +248,17 @@ _Once paid, click Verify Payment._`;
       return;
     }
 
-    let msg = `👑 *Your Active Subscriptions:* \n\n`;
+    let msg = `👑 <b>Your Active Subscriptions:</b> \n\n`;
     subs.forEach(s => {
       const p = getPlatformById(s.platformId);
       const expiry = new Date(s.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-      msg += `• ${p ? p.icon : '⭐'} *${p ? p.name : s.platformId}*: Valid until ${expiry}\n`;
+      const pName = p ? `<a href="https://t.me/${p.botUsername}">${p.name}</a>` : `<b>${s.platformId}</b>`;
+      msg += `• ${pName}: Valid until ${expiry}\n`;
     });
 
     await ctx.editMessageText(msg, {
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
       reply_markup: getPlatformsKeyboard(),
     });
     return;

@@ -52,8 +52,8 @@ export async function handleVerifyPayment(ctx) {
       expiresAt: sub.expiresAt,
     });
 
-    await ctx.reply('🎉 *Payment Verified Successfully!* Your subscription is now active.', { parse_mode: 'Markdown' });
+    await ctx.reply('🎉 <b>Payment Verified Successfully!</b> Your subscription is now active.', { parse_mode: 'HTML' });
   } else {
-    await ctx.reply(`⚠️ Payment status: *${cfStatus.orderStatus || 'PENDING'}*. Please complete the payment on Cashfree first!`, { parse_mode: 'Markdown' });
+    await ctx.reply(`⚠️ Payment status: <b>${cfStatus.orderStatus || 'PENDING'}</b>. Please complete the payment on Cashfree first!`, { parse_mode: 'HTML' });
   }
 }

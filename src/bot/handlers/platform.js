@@ -42,7 +42,7 @@ Select your desired plan below:`;
     return;
   }
 
-  // 3. Select Plan -> Generate Cashfree Payment Order
+  // 3. Select Plan -> Ask for Payment Method
   if (data.startsWith('select_plan:')) {
     const [, platformId, planId] = data.split(':');
     const platform = getPlatformById(platformId);
@@ -53,7 +53,37 @@ Select your desired plan below:`;
       return;
     }
 
-    await ctx.answerCallbackQuery({ text: 'Creating Cashfree Order...' });
+    await ctx.answerCallbackQuery();
+    
+    // Convert INR to Stars (Assume 1 INR = 1 Star for simplicity/safety against Apple 30% tax)
+    const starPrice = plan.amount; 
+
+    const methodMsg = 
+`💳 *Checkout Created!*
+
+• *Platform:* ${platform.icon} ${platform.name}
+• *Plan:* ${plan.name} (${plan.durationDays} Days)
+• *Amount:* ₹${plan.amount} (or ⭐️ ${starPrice} Stars)
+
+_Please choose your preferred payment method below:_`;
+
+    const { getPaymentMethodKeyboard } = await import('../keyboards.js');
+    await ctx.editMessageText(methodMsg, {
+      parse_mode: 'Markdown',
+      reply_markup: getPaymentMethodKeyboard(platformId, planId, plan.amount),
+    });
+    return;
+  }
+
+  // 3A. Pay Online (Cashfree Flow)
+  if (data.startsWith('pay_online:')) {
+    const [, platformId, planId] = data.split(':');
+    const platform = getPlatformById(platformId);
+    const plan = getPlan(platformId, planId);
+
+    if (!platform || !plan) return;
+
+    await ctx.answerCallbackQuery({ text: 'Generating Secure Payment Link...' });
 
     const telegramId = String(ctx.from.id);
     const orderId = `univora_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
@@ -88,19 +118,65 @@ Select your desired plan below:`;
     await order.save();
 
     const checkoutMsg = 
-`💳 *Checkout Created!*
+`🌐 *Online Checkout Ready!*
 
-• *Platform:* ${platform.icon} ${platform.name}
-• *Plan:* ${plan.name} (${plan.durationDays} Days)
-• *Total Amount:* ₹${plan.amount}
-• *Order ID:* \`${orderId}\`
-
-Click the button below to pay via UPI (GPay, PhonePe, Paytm) or Card. Once paid, click *Verify Payment*!`;
+Click the button below to pay via UPI (GPay, PhonePe, Paytm) or Card.
+_Once paid, click Verify Payment._`;
 
     await ctx.editMessageText(checkoutMsg, {
       parse_mode: 'Markdown',
       reply_markup: getCheckoutKeyboard(cfOrder.paymentLink, orderId),
     });
+    return;
+  }
+
+  // 3B. Pay with Stars (Telegram Native Flow)
+  if (data.startsWith('pay_stars:')) {
+    const [, platformId, planId] = data.split(':');
+    const platform = getPlatformById(platformId);
+    const plan = getPlan(platformId, planId);
+
+    if (!platform || !plan) return;
+
+    await ctx.answerCallbackQuery({ text: 'Preparing Telegram Stars Invoice...' });
+
+    const telegramId = String(ctx.from.id);
+    const orderId = `stars_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+    const starPrice = plan.amount; // 1 INR = 1 Star
+
+    const order = new Order({
+      orderId,
+      telegramId,
+      platformId,
+      planId,
+      amount: plan.amount, // INR Equivalent amount saved in DB
+      paymentMethod: 'TELEGRAM_STARS',
+      durationDays: plan.durationDays,
+      status: 'CREATED',
+    });
+    await order.save();
+
+    const title = `${platform.name} Premium`;
+    const description = `Activate ${plan.name} (${plan.durationDays} Days) for ${platform.name} via Telegram Stars.`;
+    const payload = orderId; // We will use this payload to identify the order upon successful payment
+    const currency = 'XTR'; // Telegram Stars Currency
+    const prices = [{ label: plan.name, amount: starPrice }];
+
+    // Send the native Telegram invoice
+    try {
+      await ctx.deleteMessage(); // Delete the current message
+      await ctx.replyWithInvoice(
+        title,
+        description,
+        payload,
+        '', // Provider token must be empty for XTR
+        currency,
+        prices
+      );
+    } catch (err) {
+      console.error('Failed to send invoice:', err);
+      await ctx.reply("❌ Error generating Telegram Stars invoice.");
+    }
     return;
   }
 

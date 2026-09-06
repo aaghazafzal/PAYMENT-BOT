@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios';
-import { config } from '../config/env.js';
+import { config } from '../../config/env.js';
 import { cashfreeWebhookMiddleware } from '../middleware/verifyCashfree.js';
 import { Order } from '../../db/models/Order.js';
 import { Ticket } from '../../db/models/Ticket.js';

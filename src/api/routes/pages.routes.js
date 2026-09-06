@@ -1,16 +1,16 @@
-import express from "express";
-import { getPlatformById, getPlan } from "../../config/plans.js";
+import express from 'express';
+import { getPlatformById, getPlan } from '../../config/plans.js';
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get('/', (req, res) => {
   const { platform: platformId, plan: planId } = req.query;
   const platform = getPlatformById(platformId);
   const plan = getPlan(platformId, planId);
 
-  const platformName = platform ? platform.name.replace(/\[UNIVORA\]/g, "").trim() : "Univora Services";
-  const planName = plan ? plan.name : "Premium Plan";
-  const isLifetime = planId === "LIFETIME" || (plan && plan.durationDays > 1000);
+  const platformName = platform ? platform.name.replace(/\[UNIVORA\]/g, '').trim() : 'Univora Services';
+  const planName = plan ? plan.name : 'Premium Plan';
+  const isLifetime = planId === 'LIFETIME' || (plan && plan.durationDays > 1000);
 
   const html = `
 <!DOCTYPE html>
@@ -66,7 +66,7 @@ router.get("/", (req, res) => {
   <header class="sticky top-0 z-50 shadow-md backdrop-blur-md bg-opacity-80 dark:bg-opacity-80" style="background-color: inherit;">
     <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="font-bold text-lg tracking-tight flex items-center gap-2">
-        <span class="text-3xl">??</span>
+        <span class="text-3xl">⚖️</span>
         <div class="leading-tight">
           Univora Legal<br>
           <span class="text-xs font-normal text-muted">${platformName}</span>
@@ -78,7 +78,7 @@ router.get("/", (req, res) => {
           English
         </button>
         <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xl">
-          ??
+          🌞
         </button>
       </div>
     </div>
@@ -126,7 +126,7 @@ router.get("/", (req, res) => {
           <h2 class="text-lg font-bold mb-2 text-yellow-700 dark:text-yellow-400">6. Lifetime Plan Clause</h2>
           <p>You have selected a <b>Lifetime Plan</b>. "Lifetime" strictly refers to the lifetime of the <i>service</i>, not the purchaser. As long as the bot is operational, you will have premium access. However, if the project is discontinued, shut down, or banned by Telegram, the lifetime plan will automatically end. No partial or full refunds will be issued in the event of service closure.</p>
         </section>
-        ` : ""}
+        ` : ''}
         <p class="text-xs text-muted mt-8 pt-4 border-t border-gray-200 dark:border-gray-800">
           By proceeding with the payment on Telegram, you electronically agree to all these terms. Close this page and click "Yes, I Agree" in the bot to continue.
         </p>
@@ -167,12 +167,11 @@ router.get("/", (req, res) => {
           <h2 class="text-lg font-bold mb-2 text-yellow-700 dark:text-yellow-400">6. Lifetime Plan Ke Niyam</h2>
           <p>Aapne <b>Lifetime Plan</b> select kiya hai. Yahan "Lifetime" ka matlab <i>is service (bot) ki life</i> se hai, aapki life se nahi. Jab tak bot chal raha hai, aapko premium milta rahega. Agar kisi wajah se project band karna pada ya Telegram ne bot ban kar diya, toh lifetime plan khatam mana jayega aur is case mein koi refund nahi hoga.</p>
         </section>
-        ` : ""}
+        ` : ''}
         <p class="text-xs text-muted mt-8 pt-4 border-t border-gray-200 dark:border-gray-800">
           Telegram par payment karke, aap in sabhi sharton ko maante hain. Is page ko close karein aur bot mein "Yes, I Agree" button par click karein.
         </p>
       </div>
-
     </div>
   </main>
 
@@ -191,11 +190,11 @@ router.get("/", (req, res) => {
       if (isDark) {
         body.classList.remove("light-theme");
         body.classList.add("dark-theme");
-        themeBtn.innerText = "??";
+        themeBtn.innerText = "🌞";
       } else {
         body.classList.remove("dark-theme");
         body.classList.add("light-theme");
-        themeBtn.innerText = "??";
+        themeBtn.innerText = "🌙";
       }
     };
     
@@ -214,7 +213,7 @@ router.get("/", (req, res) => {
     langBtn.addEventListener("click", () => {
       if (lang === "en") {
         lang = "hi";
-        langBtn.innerText = "?????";
+        langBtn.innerText = "हिंदी";
         enContent.classList.remove("active");
         hiContent.classList.add("active");
       } else {
@@ -227,10 +226,9 @@ router.get("/", (req, res) => {
   </script>
 </body>
 </html>
-  \`;
+  `;
   
   res.send(html);
 });
 
 export default router;
-

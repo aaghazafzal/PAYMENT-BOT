@@ -1,5 +1,6 @@
 import { Bot } from 'grammy';
 import { config } from '../config/env.js';
+import { handleStart, handleShowPlatforms } from './handlers/start.js';
 import { handlePlatformCallbacks } from './handlers/platform.js';
 import { handleVerifyPayment } from './handlers/verify.js';
 import { handleAdminCommands } from './handlers/admin.js';
@@ -15,7 +16,6 @@ export function initBot() {
   bot = new Bot(config.botToken);
 
   // Register command handlers
-  const { handleStart, handleShowPlatforms } = await import('./handlers/start.js');
   bot.command('start', handleStart);
   bot.command(['buy', 'premium', 'plans', 'subscribe'], handleShowPlatforms);
 

@@ -126,7 +126,7 @@ router.get("/", (req, res) => {
           <h2 class="text-lg font-bold mb-2 text-yellow-700 dark:text-yellow-400">6. Lifetime Plan Clause</h2>
           <p>You have selected a <b>Lifetime Plan</b>. "Lifetime" strictly refers to the lifetime of the <i>service</i>, not the purchaser. As long as the bot is operational, you will have premium access. However, if the project is discontinued, shut down, or banned by Telegram, the lifetime plan will automatically end. No partial or full refunds will be issued in the event of service closure.</p>
         </section>
-        ` : '}
+        ` : ""}
         <p class="text-xs text-muted mt-8 pt-4 border-t border-gray-200 dark:border-gray-800">
           By proceeding with the payment on Telegram, you electronically agree to all these terms. Close this page and click "Yes, I Agree" in the bot to continue.
         </p>
@@ -167,7 +167,7 @@ router.get("/", (req, res) => {
           <h2 class="text-lg font-bold mb-2 text-yellow-700 dark:text-yellow-400">6. Lifetime Plan Ke Niyam</h2>
           <p>Aapne <b>Lifetime Plan</b> select kiya hai. Yahan "Lifetime" ka matlab <i>is service (bot) ki life</i> se hai, aapki life se nahi. Jab tak bot chal raha hai, aapko premium milta rahega. Agar kisi wajah se project band karna pada ya Telegram ne bot ban kar diya, toh lifetime plan khatam mana jayega aur is case mein koi refund nahi hoga.</p>
         </section>
-        ` : '}
+        ` : ""}
         <p class="text-xs text-muted mt-8 pt-4 border-t border-gray-200 dark:border-gray-800">
           Telegram par payment karke, aap in sabhi sharton ko maante hain. Is page ko close karein aur bot mein "Yes, I Agree" button par click karein.
         </p>

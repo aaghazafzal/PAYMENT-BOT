@@ -87,11 +87,13 @@ export async function handleAdminCommands(bot) {
 
     broadcastState.set(adminId, messageIdToCopy);
 
-    const { InlineKeyboard } = await import('grammy');
-    const kb = new InlineKeyboard();
-    kb.text('📌 Yes, Pin it', `br_start:pin`).row();
-    kb.text('📤 No, Just Send', `br_start:nopin`).row();
-    kb.text('❌ Cancel', `br_cancel`);
+    const kb = {
+      inline_keyboard: [
+        [{ text: '📌 Yes, Pin it', callback_data: `br_start:pin`, style: 'success' }],
+        [{ text: '📤 No, Just Send', callback_data: `br_start:nopin`, style: 'primary' }],
+        [{ text: '❌ Cancel', callback_data: `br_cancel`, style: 'danger' }]
+      ]
+    };
 
     await ctx.reply('📢 *Broadcast Ready*\n\nDo you want to automatically pin this message for all users when they receive it?', {
       parse_mode: 'Markdown',

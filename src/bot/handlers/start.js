@@ -64,8 +64,6 @@ export async function handleShowPlatforms(ctx) {
 }
 
 export async function handleReport(ctx) {
-  const { InlineKeyboard } = await import('grammy');
-  
   const reportMsg = 
 `🐞 <b>Report a Bug or Issue</b>
 
@@ -79,8 +77,11 @@ We strive to provide the best experience across the Univora Ecosystem. However, 
 
 Click the button below to reach our official Support & Report Bot, where our team will assist you directly!`;
 
-  const kb = new InlineKeyboard();
-  kb.url('💬 REPORT [UNIVORA]', 'https://t.me/UNIVORA_REPORTBOT');
+  const kb = {
+    inline_keyboard: [
+      [{ text: '💬 REPORT [UNIVORA]', url: 'https://t.me/UNIVORA_REPORTBOT', style: 'primary' }]
+    ]
+  };
 
   await ctx.reply(reportMsg, {
     parse_mode: 'HTML',
@@ -123,13 +124,15 @@ export async function handleMySubscriptions(ctx) {
 }
 
 export async function handlePrivacy(ctx) {
-  const { InlineKeyboard } = await import('grammy');
   const { config } = await import('../../config/env.js');
   
   const msg = `🛡️ <b>Privacy Policy & Terms</b>\n\nPlease read our Privacy Policy and Terms & Conditions to understand how we handle your data, usage limits, and refund policies.`;
   
-  const kb = new InlineKeyboard();
-  kb.webApp('📄 View Privacy Policy', `${config.serverUrl}/terms`);
+  const kb = {
+    inline_keyboard: [
+      [{ text: '📄 View Privacy Policy', web_app: { url: `${config.serverUrl}/terms` }, style: 'primary' }]
+    ]
+  };
   
   await ctx.reply(msg, {
     parse_mode: 'HTML',

@@ -1,31 +1,37 @@
-import { InlineKeyboard } from 'grammy';
 import { PLATFORMS, getPlatformById } from '../config/plans.js';
 
 /**
  * Returns the Main Menu keyboard (for /start)
  */
 export function getMainMenuKeyboard() {
-  const kb = new InlineKeyboard();
-  kb.text('💎 Buy Subscription', 'show_platforms').row();
-  kb.url('📢 Official Channel', 'https://t.me/univora88').row();
-  kb.url('🌐 Visit Website', 'https://univora.website').row();
-  kb.text('❓ Help & Support', 'help_menu');
-  kb.text('🐞 Report Issue', 'report_issue').row();
-  return kb;
+  return {
+    inline_keyboard: [
+      [{ text: '💎 Buy Subscription', callback_data: 'show_platforms', style: 'primary' }],
+      [
+        { text: '📢 Official Channel', url: 'https://t.me/univora88' },
+        { text: '🌐 Visit Website', url: 'https://univora.website' }
+      ],
+      [
+        { text: '❓ Help & Support', callback_data: 'help_menu', style: 'success' },
+        { text: '🐞 Report Issue', callback_data: 'report_issue', style: 'danger' }
+      ]
+    ]
+  };
 }
 
 /**
  * Returns platform selection keyboard
  */
 export function getPlatformsKeyboard() {
-  const kb = new InlineKeyboard();
+  const inline_keyboard = [];
   
   PLATFORMS.forEach(p => {
-    kb.text(p.name, `select_platform:${p.id}`).row();
+    inline_keyboard.push([{ text: p.name, callback_data: `select_platform:${p.id}`, style: 'primary' }]);
   });
   
-  kb.text('🔙 Back to Main Menu', 'back_to_menu').row();
-  return kb;
+  inline_keyboard.push([{ text: '🔙 Back to Main Menu', callback_data: 'back_to_menu', style: 'danger' }]);
+  
+  return { inline_keyboard };
 }
 
 /**
@@ -33,49 +39,54 @@ export function getPlatformsKeyboard() {
  */
 export function getPlansKeyboard(platformId) {
   const platform = getPlatformById(platformId);
-  const kb = new InlineKeyboard();
+  const inline_keyboard = [];
 
   if (platform && platform.plans) {
     platform.plans.forEach(plan => {
-      kb.text(`⭐ ${plan.name} - ₹${plan.amount}`, `select_plan:${platformId}:${plan.id}`).row();
+      inline_keyboard.push([{ text: `⭐ ${plan.name} - ₹${plan.amount}`, callback_data: `select_plan:${platformId}:${plan.id}`, style: 'success' }]);
     });
   }
 
-  kb.text('🔙 Back to Platforms', 'back_to_platforms');
-  return kb;
+  inline_keyboard.push([{ text: '🔙 Back to Platforms', callback_data: 'back_to_platforms', style: 'danger' }]);
+  
+  return { inline_keyboard };
 }
 
 /**
  * Returns terms & conditions agreement keyboard
  */
 export function getTermsKeyboard(platformId, planId, termsUrl) {
-  const kb = new InlineKeyboard();
-  kb.webApp('📄 View Terms & Conditions', termsUrl).row();
-  kb.text('✅ Yes, I Agree', `agree_terms:${platformId}:${planId}`).row();
-  kb.text('🔙 Back to Plans', `select_platform:${platformId}`);
-  return kb;
+  return {
+    inline_keyboard: [
+      [{ text: '📄 View Terms & Conditions', web_app: { url: termsUrl }, style: 'primary' }],
+      [{ text: '✅ Yes, I Agree', callback_data: `agree_terms:${platformId}:${planId}`, style: 'success' }],
+      [{ text: '🔙 Back to Plans', callback_data: `select_platform:${platformId}`, style: 'danger' }]
+    ]
+  };
 }
 
 /**
  * Returns payment method selection keyboard
  */
 export function getPaymentMethodKeyboard(platformId, planId, amount) {
-  const kb = new InlineKeyboard();
-  kb.text(`⭐️ Pay with Telegram Stars (XTR)`, `pay_stars:${platformId}:${planId}`).row();
-  kb.text(`🌐 Pay Online (UPI / Cards)`, `pay_online:${platformId}:${planId}`).row();
-  kb.text('🔙 Back to Plans', `select_platform:${platformId}`);
-  return kb;
+  return {
+    inline_keyboard: [
+      [{ text: `⭐️ Pay with Telegram Stars (XTR)`, callback_data: `pay_stars:${platformId}:${planId}`, style: 'primary' }],
+      [{ text: `🌐 Pay Online (UPI / Cards)`, callback_data: `pay_online:${platformId}:${planId}`, style: 'success' }],
+      [{ text: '🔙 Back to Plans', callback_data: `select_platform:${platformId}`, style: 'danger' }]
+    ]
+  };
 }
 
 /**
  * Returns checkout keyboard with payment link and manual verify button
  */
 export function getCheckoutKeyboard(paymentLink, orderId) {
-  const kb = new InlineKeyboard();
-  
-  kb.url('💳 Pay Online (UPI, Cards, Wallets)', paymentLink).row();
-  kb.text('🔄 Verify Payment', `verify_pay:${orderId}`).row();
-  kb.text('❌ Cancel / Main Menu', 'back_to_platforms');
-  
-  return kb;
+  return {
+    inline_keyboard: [
+      [{ text: '💳 Pay Online (UPI, Cards, Wallets)', url: paymentLink, style: 'success' }],
+      [{ text: '🔄 Verify Payment', callback_data: `verify_pay:${orderId}`, style: 'primary' }],
+      [{ text: '❌ Cancel / Main Menu', callback_data: 'back_to_platforms', style: 'danger' }]
+    ]
+  };
 }

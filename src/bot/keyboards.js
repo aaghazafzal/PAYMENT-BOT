@@ -8,8 +8,8 @@ export function getMainMenuKeyboard() {
     inline_keyboard: [
       [{ text: '💎 Buy Subscription', callback_data: 'show_platforms', style: 'primary' }],
       [
-        { text: '📢 Official Channel', url: 'https://t.me/univora88' },
-        { text: '🌐 Visit Website', url: 'https://univora.website' }
+        { text: '📢 Official Channel', url: 'https://t.me/UnivoraOfficial', style: 'primary' },
+        { text: '🌐 Visit Website', url: 'https://univora.website', style: 'primary' }
       ],
       [
         { text: '❓ Help & Support', callback_data: 'help_menu', style: 'success' },

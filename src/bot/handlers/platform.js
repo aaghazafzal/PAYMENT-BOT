@@ -35,8 +35,11 @@ If you pay with Telegram Stars or Online natively, you will get an Activation Ti
 
 If you face any issues, contact our support team in the Official Channel.`;
     
-    const { InlineKeyboard } = await import('grammy');
-    const kb = new InlineKeyboard().text('🔙 Back to Menu', 'back_to_menu');
+    const kb = {
+      inline_keyboard: [
+        [{ text: '🔙 Back to Menu', callback_data: 'back_to_menu', style: 'danger' }]
+      ]
+    };
     await ctx.editMessageText(helpMsg, { parse_mode: 'HTML', reply_markup: kb });
     return;
   }

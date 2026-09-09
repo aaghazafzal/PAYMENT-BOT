@@ -30,7 +30,8 @@ export async function createCashfreeOrder({ orderId, amount, customerId, custome
       customer_email: customerEmail,
     },
     order_meta: {
-      return_url: `https://t.me/PAYMENT_UNIVORABOT`,
+      return_url: `${config.serverUrl}/api/v1/payment/callback?order_id={order_id}`,
+      notify_url: `${config.serverUrl}/api/v1/payment/webhook`,
     },
   };
 

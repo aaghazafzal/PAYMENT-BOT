@@ -189,31 +189,166 @@ router.get('/checkout', (req, res) => {
  */
 router.get('/callback', async (req, res) => {
   const { order_id } = req.query;
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Univora Payment Result</title>
-      <style>
-        body { background: #0a0a0a; color: #fff; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-        .card { background: #141414; border: 1px solid #ff6b00; padding: 2rem; border-radius: 12px; max-width: 400px; }
-        h1 { color: #ff6b00; margin-bottom: 0.5rem; }
-        p { color: #aaa; font-size: 0.95rem; }
-        .btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #ff6b00; color: #000; font-weight: bold; text-decoration: none; border-radius: 6px; }
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <h1>Payment Processing...</h1>
-        <p>Order ID: ${order_id || 'N/A'}</p>
-        <p>Your payment is being verified by Univora Security Engine.</p>
-        <p>You can close this window and check your Telegram Bot for instant confirmation!</p>
-      </div>
-    </body>
-    </html>
-  `);
+  try {
+    const order = await Order.findOne({ orderId: order_id });
+    if (!order) {
+      return res.send('<h2>Order not found</h2>');
+    }
+
+    let isPaid = order.status === 'PAID';
+    
+    // Fallback Verification if webhook missed
+    if (!isPaid) {
+      const cfStatus = await getCashfreeOrderStatus(order_id);
+      if (cfStatus.success && cfStatus.orderStatus === 'PAID') {
+        order.status = 'PAID';
+        order.cfPaymentId = cfStatus.cfPaymentId || '';
+        order.verifiedAt = new Date();
+        await order.save();
+
+        if (order.isGatewayOrder && order.callbackUrl) {
+          const axios = (await import('axios')).default;
+          try {
+            await axios.post(order.callbackUrl, {
+              status: 'SUCCESS',
+              orderId: order.orderId,
+              userId: order.telegramId,
+              planId: order.planId,
+              platformId: order.platformId,
+              amount: order.amount,
+              timestamp: new Date().toISOString()
+            }, {
+              headers: { 'x-ecosystem-secret': (await import('../../config/env.js')).config.ecosystemSecret }
+            });
+            order.webhookSent = true;
+            await order.save();
+          } catch (e) {
+            console.error('Webhook fail in callback:', e.message);
+          }
+        } else {
+          const sub = await grantSubscription({
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+        }
+        isPaid = true;
+      }
+    }
+
+    // Redirect to the Bot
+    let targetBotUsername = "PAYMENT_UNIVORABOT";
+    if (order.targetBot === "STREAMDROP") targetBotUsername = "STREAM_DROP_BOT";
+    else if (order.targetBot === "CINEMAHUB") targetBotUsername = "CinemaHubBot"; // fallback guess
+    
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Payment Successful</title>
+        <script>
+          setTimeout(() => {
+            window.location.href = "tg://resolve?domain=${targetBotUsername}";
+          }, 1500);
+        </script>
+        <style>
+          body { background: #0a0a0a; color: #fff; font-family: system-ui; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+          .card { background: #141414; border: 1px solid #00ff00; padding: 2rem; border-radius: 12px; }
+          h1 { color: #00ff00; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>✅ Payment Verified!</h1>
+          <p>Redirecting back to Telegram...</p>
+          <a style="color: #00ff00" href="tg://resolve?domain=${targetBotUsername}">Click here if not redirected</a>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (err) {
+    res.send('<h2>Error verifying payment</h2>');
+  }
+});
+
+/**
+ * Cashfree Server-to-Server Webhook
+ * Automatically activates subscription as soon as payment succeeds
+ */
+router.post('/webhook', async (req, res) => {
+  try {
+    // req.body is already parsed by express.json()
+    const payload = req.body;
+    const signature = req.headers['x-webhook-signature'];
+    const timestamp = req.headers['x-webhook-timestamp'];
+    
+    // Check webhook signature if implemented:
+    // const { verifyCashfreeWebhookSignature } = await import('../../services/cashfree.service.js');
+    // if (!verifyCashfreeWebhookSignature(req.rawBody, signature, timestamp)) return res.status(403).send('Invalid Signature');
+
+    if (payload && payload.data && payload.data.order) {
+      const orderId = payload.data.order.order_id;
+      const orderAmount = payload.data.order.order_amount;
+      
+      const order = await Order.findOne({ orderId });
+      if (order && order.status !== 'PAID') {
+        const cfStatus = await getCashfreeOrderStatus(orderId);
+        
+        if (cfStatus.success && cfStatus.orderStatus === 'PAID') {
+          order.status = 'PAID';
+          order.cfPaymentId = cfStatus.cfPaymentId || '';
+          order.verifiedAt = new Date();
+          await order.save();
+
+          if (order.isGatewayOrder && order.callbackUrl) {
+            const axios = (await import('axios')).default;
+            try {
+              await axios.post(order.callbackUrl, {
+                status: 'SUCCESS',
+                orderId: order.orderId,
+                userId: order.telegramId,
+                planId: order.planId,
+                platformId: order.platformId,
+                amount: order.amount,
+                timestamp: new Date().toISOString()
+              }, {
+                headers: { 'x-ecosystem-secret': (await import('../../config/env.js')).config.ecosystemSecret }
+              });
+              order.webhookSent = true;
+              await order.save();
+            } catch (e) {
+              console.error('Webhook fail in S2S webhook:', e.message);
+            }
+          } else {
+            const sub = await grantSubscription({
+              telegramId: order.telegramId,
+              platformId: order.platformId,
+              planId: order.planId,
+              orderId: order.orderId,
+            });
+            
+            await sendPaymentReceipt({
+              telegramId: order.telegramId,
+              orderId: order.orderId,
+              platformId: order.platformId,
+              planId: order.planId,
+              amount: order.amount,
+              expiresAt: sub.expiresAt,
+            });
+          }
+          console.log(`✅ Webhook verified & activated order: ${orderId}`);
+        }
+      }
+    }
+    
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Webhook Error:', error);
+    res.status(500).send('Webhook Error');
+  }
 });
 
 export default router;

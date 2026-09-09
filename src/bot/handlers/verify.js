@@ -36,21 +36,42 @@ export async function handleVerifyPayment(ctx) {
     order.verifiedAt = new Date();
     await order.save();
 
-    const sub = await grantSubscription({
-      telegramId: order.telegramId,
-      platformId: order.platformId,
-      planId: order.planId,
-      orderId: order.orderId,
-    });
+    if (order.isGatewayOrder && order.callbackUrl) {
+      const axios = (await import('axios')).default;
+      try {
+        await axios.post(order.callbackUrl, {
+          status: 'SUCCESS',
+          orderId: order.orderId,
+          userId: order.telegramId,
+          planId: order.planId,
+          platformId: order.platformId,
+          amount: order.amount,
+          timestamp: new Date().toISOString()
+        }, {
+          headers: { 'x-ecosystem-secret': (await import('../../config/env.js')).config.ecosystemSecret }
+        });
+        order.webhookSent = true;
+        await order.save();
+      } catch (e) {
+        console.error('Webhook fail in verify manual:', e.message);
+      }
+    } else {
+      const sub = await grantSubscription({
+        telegramId: order.telegramId,
+        platformId: order.platformId,
+        planId: order.planId,
+        orderId: order.orderId,
+      });
 
-    await sendPaymentReceipt({
-      telegramId: order.telegramId,
-      orderId: order.orderId,
-      platformId: order.platformId,
-      planId: order.planId,
-      amount: order.amount,
-      expiresAt: sub.expiresAt,
-    });
+      await sendPaymentReceipt({
+        telegramId: order.telegramId,
+        orderId: order.orderId,
+        platformId: order.platformId,
+        planId: order.planId,
+        amount: order.amount,
+        expiresAt: sub.expiresAt,
+      });
+    }
 
     await ctx.reply('🎉 <b>Payment Verified Successfully!</b> Your subscription is now active.', { parse_mode: 'HTML' });
   } else {

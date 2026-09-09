@@ -105,11 +105,21 @@ router.get('/verify-order/:orderId', async (req, res) => {
       await order.save();
 
       const sub = await grantSubscription({
-        telegramId: order.telegramId,
-        platformId: order.platformId,
-        planId: order.planId,
-        orderId: order.orderId,
-      });
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+          const { sendPaymentReceipt } = await import('../../services/notify.service.js');
+          await sendPaymentReceipt({
+            telegramId: order.telegramId,
+            orderId: order.orderId,
+            platformId: order.platformId,
+            planId: order.planId,
+            amount: order.amount,
+            expiresAt: sub.expiresAt,
+            ticketId: ''
+          });
 
       await sendPaymentReceipt({
         telegramId: order.telegramId,

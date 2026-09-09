@@ -19,7 +19,31 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
   const targetBotUsername = platform ? platform.botUsername : '';
 
   let ticketText = '';
-  if (ticketId && targetBotUsername) {
+  if (platformId === 'STREAMDROP') {
+    ticketText = `\n\n✅ <b>Automatic Activation:</b>\nYour plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
+    
+    // Auto-Dispatch Global Webhook
+    (async () => {
+      try {
+        const { config } = await import('../config/env.js');
+        const axios = (await import('axios')).default;
+        await axios.post('https://streamdrop.site/webhook/payment-success', {
+          status: 'SUCCESS',
+          orderId: orderId,
+          userId: telegramId,
+          planId: planId,
+          platformId: platformId,
+          amount: amount,
+          timestamp: new Date().toISOString()
+        }, {
+          headers: { 'x-ecosystem-secret': config.ecosystemSecret }
+        });
+        console.log(`✅ Auto-Activation Webhook sent to STREAMDROP!`);
+      } catch (err) {
+        console.error(`Failed to auto-activate STREAMDROP:`, err.message);
+      }
+    })();
+  } else if (ticketId && targetBotUsername) {
     ticketText = `\n\n🎯 <b>Action Required:</b>\nClick the link below to instantly activate this plan in <a href="https://t.me/${targetBotUsername}">${platform.name}</a>:\n👉 <a href="https://t.me/${targetBotUsername}?start=claim_${ticketId}">Click to Activate!</a>`;
   } else if (ticketId) {
     ticketText = `\n\n🎯 <b>Activation Ticket:</b>\nUse this code in the target bot to activate: <code>${ticketId}</code>`;

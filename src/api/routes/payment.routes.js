@@ -1,6 +1,7 @@
 import express from 'express';
 import { config } from '../../config/env.js';
 import { Order } from '../../db/models/Order.js';
+import { Ticket } from '../../db/models/Ticket.js';
 import { createCashfreeOrder, getCashfreeOrderStatus } from '../../services/cashfree.service.js';
 import { grantSubscription } from '../../services/subscription.service.js';
 import { sendPaymentReceipt } from '../../services/notify.service.js';
@@ -104,12 +105,25 @@ router.get('/verify-order/:orderId', async (req, res) => {
       order.verifiedAt = new Date();
       await order.save();
 
-      const sub = await grantSubscription({
+      
+          const sub = await grantSubscription({
             telegramId: order.telegramId,
             platformId: order.platformId,
             planId: order.planId,
             orderId: order.orderId,
           });
+          
+          // Generate Claim Ticket for Ecosystem Setup
+          const ticketId = UNV--;
+          const newTicket = new Ticket({
+            ticketId,
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+          await newTicket.save();
+
           const { sendPaymentReceipt } = await import('../../services/notify.service.js');
           await sendPaymentReceipt({
             telegramId: order.telegramId,
@@ -118,17 +132,9 @@ router.get('/verify-order/:orderId', async (req, res) => {
             planId: order.planId,
             amount: order.amount,
             expiresAt: sub.expiresAt,
-            ticketId: ''
+            ticketId: ticketId
           });
 
-      await sendPaymentReceipt({
-        telegramId: order.telegramId,
-        orderId: order.orderId,
-        platformId: order.platformId,
-        planId: order.planId,
-        amount: order.amount,
-        expiresAt: sub.expiresAt,
-      });
 
       return res.json({
         status: 'success',

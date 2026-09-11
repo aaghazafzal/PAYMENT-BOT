@@ -19,7 +19,7 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
   const targetBotUsername = platform ? platform.botUsername : '';
 
   let ticketText = '';
-  if (platformId === 'STREAMDROP' || platformId === 'CINEMAHUB' || platformId === 'EXTRACT_X') {
+  if (platformId === 'STREAMDROP' || platformId === 'CINEMAHUB' || platformId === 'EXTRACT_X' || platformId === 'SHARE_BOX') {
     ticketText = `
 
 ✅ <b>Automatic Activation:</b>
@@ -38,6 +38,9 @@ Your plan has been automatically activated in ${platform.name}! You can now retu
           webhookUrl = 'https://bot.cinemahub.biz/webhook/payment-success';
         } else if (platformId === 'EXTRACT_X') {
           webhookUrl = 'http://140.245.217.183/extractx/webhook/payment-success';
+        } else if (platformId === 'SHARE_BOX') {
+          // Send webhook to localhost since it's on the same server, or to a custom domain if provided
+          webhookUrl = process.env.SHARE_BOX_WEBHOOK || 'http://localhost:10000/webhook/payment-success';
         }
         
         await axios.post(webhookUrl, {

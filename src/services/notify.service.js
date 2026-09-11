@@ -19,10 +19,10 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
   const targetBotUsername = platform ? platform.botUsername : '';
 
   let ticketText = '';
-  if (platformId === 'STREAMDROP' || platformId === 'CINEMAHUB') {
+  if (platformId === 'STREAMDROP' || platformId === 'CINEMAHUB' || platformId === 'EXTRACT_X') {
     ticketText = `
 
-? <b>Automatic Activation:</b>
+✅ <b>Automatic Activation:</b>
 Your plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
     
     // Auto-Dispatch Global Webhook
@@ -36,6 +36,8 @@ Your plan has been automatically activated in ${platform.name}! You can now retu
           webhookUrl = 'https://streamdrop.site/webhook/payment-success';
         } else if (platformId === 'CINEMAHUB') {
           webhookUrl = 'https://bot.cinemahub.biz/webhook/payment-success';
+        } else if (platformId === 'EXTRACT_X') {
+          webhookUrl = 'http://140.245.217.183/extractx/webhook/payment-success';
         }
         
         await axios.post(webhookUrl, {

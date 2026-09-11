@@ -242,6 +242,15 @@ router.get('/callback', async (req, res) => {
             planId: order.planId,
             orderId: order.orderId,
           });
+          const { sendPaymentReceipt } = await import('../../services/notify.service.js');
+          await sendPaymentReceipt({
+            telegramId: order.telegramId,
+            orderId: order.orderId,
+            platformId: order.platformId,
+            planId: order.planId,
+            amount: order.amount,
+            expiresAt: sub.expiresAt,
+          });
         }
         isPaid = true;
       }

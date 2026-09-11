@@ -103,6 +103,22 @@ Select your desired plan below:`;
       return;
     }
 
+    // Check if user is already Owner or Lifetime in StreamDrop
+    if (platformId === 'STREAMDROP') {
+      const { config } = await import('../../config/env.js');
+      if (config.adminIds.includes(String(ctx.from.id))) {
+        await ctx.answerCallbackQuery({ text: '✅ You are an Admin. You already have unlimited access.', show_alert: true });
+        return;
+      }
+      
+      const mongoose = (await import('mongoose')).default;
+      const streamUser = await mongoose.connection.collection('users').findOne({ _id: ctx.from.id });
+      if (streamUser && streamUser.plan === 'lifetime') {
+        await ctx.answerCallbackQuery({ text: '✅ You already have the Lifetime Plan! No need to buy again.', show_alert: true });
+        return;
+      }
+    }
+
     await ctx.answerCallbackQuery();
     
     const termsUrl = `https://payment.univora.website/terms?platform=${platformId}&plan=${planId}`;

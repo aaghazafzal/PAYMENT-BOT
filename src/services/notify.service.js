@@ -19,15 +19,26 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
   const targetBotUsername = platform ? platform.botUsername : '';
 
   let ticketText = '';
-  if (platformId === 'STREAMDROP') {
-    ticketText = `\n\n✅ <b>Automatic Activation:</b>\nYour plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
+  if (platformId === 'STREAMDROP' || platformId === 'CINEMAHUB') {
+    ticketText = `
+
+? <b>Automatic Activation:</b>
+Your plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
     
     // Auto-Dispatch Global Webhook
     (async () => {
       try {
         const { config } = await import('../config/env.js');
         const axios = (await import('axios')).default;
-        await axios.post('https://streamdrop.site/webhook/payment-success', {
+        
+        let webhookUrl = '';
+        if (platformId === 'STREAMDROP') {
+          webhookUrl = 'https://streamdrop.site/webhook/payment-success';
+        } else if (platformId === 'CINEMAHUB') {
+          webhookUrl = 'https://bot.cinemahub.biz/webhook/payment-success';
+        }
+        
+        await axios.post(webhookUrl, {
           status: 'SUCCESS',
           orderId: orderId,
           userId: telegramId,
@@ -38,9 +49,9 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
         }, {
           headers: { 'x-ecosystem-secret': config.ecosystemSecret }
         });
-        console.log(`✅ Auto-Activation Webhook sent to STREAMDROP!`);
+        console.log(`? Auto-Activation Webhook sent to ${platformId}!`);
       } catch (err) {
-        console.error(`Failed to auto-activate STREAMDROP:`, err.message);
+        console.error(`Failed to auto-activate ${platformId}:`, err.message);
       }
     })();
   } else if (ticketId && targetBotUsername) {

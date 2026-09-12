@@ -19,15 +19,10 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
   const targetBotUsername = platform ? platform.botUsername : '';
 
   let ticketText = '';
+  let autoActivationSuccess = false;
+  
   if (platformId === 'STREAMDROP' || platformId === 'CINEMAHUB' || platformId === 'EXTRACT_X' || platformId === 'SHARE_BOX') {
-    ticketText = `
-
-✅ <b>Automatic Activation:</b>
-Your plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
-    
-    // Auto-Dispatch Global Webhook
-    (async () => {
-      try {
+    try {
         const { config } = await import('../config/env.js');
         const axios = (await import('axios')).default;
         
@@ -39,8 +34,7 @@ Your plan has been automatically activated in ${platform.name}! You can now retu
         } else if (platformId === 'EXTRACT_X') {
           webhookUrl = 'http://140.245.217.183/extractx/webhook/payment-success';
         } else if (platformId === 'SHARE_BOX') {
-          // Send webhook to localhost since it's on the same server, or to a custom domain if provided
-          webhookUrl = process.env.SHARE_BOX_WEBHOOK || 'http://localhost:10000/webhook/payment-success';
+          webhookUrl = process.env.SHARE_BOX_WEBHOOK || 'http://localhost:9090/webhook/payment-success';
         }
         
         await axios.post(webhookUrl, {
@@ -52,13 +46,18 @@ Your plan has been automatically activated in ${platform.name}! You can now retu
           amount: amount,
           timestamp: new Date().toISOString()
         }, {
-          headers: { 'x-ecosystem-secret': config.ecosystemSecret }
+          headers: { 'x-ecosystem-secret': config.ecosystemSecret },
+          timeout: 5000
         });
-        console.log(`? Auto-Activation Webhook sent to ${platformId}!`);
-      } catch (err) {
-        console.error(`Failed to auto-activate ${platformId}:`, err.message);
-      }
-    })();
+        console.log(`✅ Auto-Activation Webhook sent to ${platformId}!`);
+        autoActivationSuccess = true;
+    } catch (err) {
+        console.error(`🚨 Failed to auto-activate ${platformId}:`, err.message);
+    }
+  }
+
+  if (autoActivationSuccess) {
+    ticketText = `\n\n✅ <b>Automatic Activation:</b>\nYour plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
   } else if (ticketId && targetBotUsername) {
     ticketText = `\n\n🎯 <b>Action Required:</b>\nClick the link below to instantly activate this plan in <a href="https://t.me/${targetBotUsername}">${platform.name}</a>:\n👉 <a href="https://t.me/${targetBotUsername}?start=claim_${ticketId}">Click to Activate!</a>`;
   } else if (ticketId) {

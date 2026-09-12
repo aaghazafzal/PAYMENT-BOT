@@ -34,7 +34,7 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
         } else if (platformId === 'EXTRACT_X') {
           webhookUrl = 'http://140.245.217.183/extractx/webhook/payment-success';
         } else if (platformId === 'SHARE_BOX') {
-          webhookUrl = process.env.SHARE_BOX_WEBHOOK || 'http://localhost:9090/webhook/payment-success';
+          webhookUrl = process.env.SHARE_BOX_WEBHOOK || 'https://sharebox.buzz/webhook/payment-success';
         }
         
         await axios.post(webhookUrl, {

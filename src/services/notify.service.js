@@ -56,29 +56,12 @@ export async function sendPaymentReceipt({ telegramId, orderId, platformId, plan
     }
   }
 
-  let currentTicket = ticketId;
-
   if (autoActivationSuccess) {
     ticketText = `\n\n✅ <b>Automatic Activation:</b>\nYour plan has been automatically activated in ${platform.name}! You can now return to the bot and start using your premium features.`;
-  } else {
-    // If webhook failed or not supported, we must provide a ticket so the user isn't stranded
-    if (!currentTicket) {
-      const { Ticket } = await import('../db/models/Ticket.js');
-      currentTicket = `UNV-${Math.floor(1000000 + Math.random() * 9000000)}`;
-      await Ticket.create({
-        ticketId: currentTicket,
-        telegramId,
-        platformId,
-        planId,
-        orderId: orderId || `manual_${Date.now()}`
-      });
-    }
-
-    if (targetBotUsername) {
-      ticketText = `\n\n🎯 <b>Action Required:</b>\nClick the link below to instantly activate this plan in <a href="https://t.me/${targetBotUsername}">${platform.name}</a>:\n👉 <a href="https://t.me/${targetBotUsername}?start=claim_${currentTicket}">Click to Activate!</a>`;
-    } else {
-      ticketText = `\n\n🎯 <b>Activation Ticket:</b>\nUse this code in the target bot to activate: <code>${currentTicket}</code>`;
-    }
+  } else if (ticketId && targetBotUsername) {
+    ticketText = `\n\n🎯 <b>Action Required:</b>\nClick the link below to instantly activate this plan in <a href="https://t.me/${targetBotUsername}">${platform.name}</a>:\n👉 <a href="https://t.me/${targetBotUsername}?start=claim_${ticketId}">Click to Activate!</a>`;
+  } else if (ticketId) {
+    ticketText = `\n\n🎯 <b>Activation Ticket:</b>\nUse this code in the target bot to activate: <code>${ticketId}</code>`;
   }
 
   const pName = platform ? `<a href="https://t.me/${platform.botUsername}">${platform.name}</a>` : platformId;

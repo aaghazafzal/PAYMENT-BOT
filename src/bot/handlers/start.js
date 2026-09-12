@@ -110,12 +110,31 @@ export async function handleMySubscriptions(ctx) {
   }
 
   let msg = `👑 <b>Your Active Subscriptions:</b> \n\n`;
-  subs.forEach(s => {
+  const { Ticket } = await import('../../db/models/Ticket.js');
+
+  for (const s of subs) {
     const p = getPlatformById(s.platformId);
     const expiry = new Date(s.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     const pName = p ? `<a href="https://t.me/${p.botUsername}">${p.name}</a>` : `<b>${s.platformId}</b>`;
+    
+    let ticket = await Ticket.findOne({ telegramId, platformId: s.platformId, status: 'UNUSED' });
+    if (!ticket) {
+      ticket = await Ticket.create({
+        ticketId: `UNV-${Math.floor(1000000 + Math.random() * 9000000)}`,
+        telegramId,
+        platformId: s.platformId,
+        planId: s.planId,
+        orderId: s.lastOrderId || `manual_${Date.now()}`
+      });
+    }
+
     msg += `• ${pName}: Valid until ${expiry}\n`;
-  });
+    if (p && p.botUsername) {
+      msg += `  👉 <a href="https://t.me/${p.botUsername}?start=claim_${ticket.ticketId}">Click here to Sync/Activate in bot</a>\n\n`;
+    } else {
+      msg += `  🎟 Ticket: <code>${ticket.ticketId}</code>\n\n`;
+    }
+  }
 
   await ctx.reply(msg, {
     parse_mode: 'HTML',

@@ -248,6 +248,18 @@ router.get('/callback', async (req, res) => {
             planId: order.planId,
             orderId: order.orderId,
           });
+
+          // Generate Claim Ticket for Ecosystem Setup
+          const ticketId = `UNV-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          const newTicket = new Ticket({
+            ticketId,
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+          await newTicket.save();
+
           const { sendPaymentReceipt } = await import('../../services/notify.service.js');
           await sendPaymentReceipt({
             telegramId: order.telegramId,
@@ -256,6 +268,7 @@ router.get('/callback', async (req, res) => {
             planId: order.planId,
             amount: order.amount,
             expiresAt: sub.expiresAt,
+            ticketId: ticketId
           });
         }
         isPaid = true;
@@ -349,20 +362,33 @@ router.post('/webhook', async (req, res) => {
             }
           } else {
             const sub = await grantSubscription({
-              telegramId: order.telegramId,
-              platformId: order.platformId,
-              planId: order.planId,
-              orderId: order.orderId,
-            });
-            
-            await sendPaymentReceipt({
-              telegramId: order.telegramId,
-              orderId: order.orderId,
-              platformId: order.platformId,
-              planId: order.planId,
-              amount: order.amount,
-              expiresAt: sub.expiresAt,
-            });
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+
+          // Generate Claim Ticket for Ecosystem Setup
+          const ticketId = `UNV-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          const newTicket = new Ticket({
+            ticketId,
+            telegramId: order.telegramId,
+            platformId: order.platformId,
+            planId: order.planId,
+            orderId: order.orderId,
+          });
+          await newTicket.save();
+
+          const { sendPaymentReceipt } = await import('../../services/notify.service.js');
+          await sendPaymentReceipt({
+            telegramId: order.telegramId,
+            orderId: order.orderId,
+            platformId: order.platformId,
+            planId: order.planId,
+            amount: order.amount,
+            expiresAt: sub.expiresAt,
+            ticketId: ticketId
+          });
           }
           console.log(`✅ Webhook verified & activated order: ${orderId}`);
         }
